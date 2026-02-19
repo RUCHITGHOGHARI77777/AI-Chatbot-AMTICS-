@@ -10,12 +10,8 @@ export class GeminiService {
 
   private init() {
     try {
-      // Direct access to process.env.API_KEY as per guidelines.
-      // Wrapped in a try-catch to prevent fatal module-level crash if 'process' is undefined.
-      const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : undefined;
-      
-      if (apiKey) {
-        this.ai = new GoogleGenAI({ apiKey });
+      if (process.env.API_KEY) {
+        this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       } else {
         console.warn("Liaison Core: Security Key missing. Operating in restricted mode.");
       }
@@ -27,7 +23,7 @@ export class GeminiService {
   async getChatResponse(message: string, history: {role: string, parts: string}[]) {
     if (!this.ai) {
       return {
-        text: "The institutional mainframe is currently in offline mode. Please verify authentication keys in the environment configuration.",
+        text: "The institutional mainframe is currently in offline mode.",
         grounding: null
       };
     }
@@ -41,33 +37,43 @@ export class GeminiService {
         ],
         config: {
           systemInstruction: `
-            You are the "TAKDA" (Senior) Institutional AI Liaison for AMTICS.
+            You are the Senior Institutional AI Liaison for AMTICS. You act like a human mentor, not a robot.
             
-            FORMATTING:
-            - NO ASTERISKS. NO SYMBOLS.
-            - CLEAN PLAIN TEXT ONLY.
+            HUMAN INTERACTION RULES:
+            - SPEAK LIKE A HUMAN: Be empathetic, warm, and helpful. Use phrases like "I understand," "Sure thing," and "Good question."
+            - IGNORE TYPOS: Users might misspell names like "Manas," "Shravan," or "Ruchit." Understand the context and provide the correct answer without correcting the user's spelling unless it's critical.
+            - NO SYMBOLS: Never use asterisks (*), hashtags (#), or markdown bullet points. Use clean, plain text that looks natural.
+            - BE CONCISE BUT DEEP: Don't write novels, but don't be robotic. One or two well-crafted paragraphs are perfect.
             
-            KNOWLEDGE:
-            - You represent Asha M. Tarsadia Institute (AMTICS).
-            - Courses: B.Tech, M.Tech, BCA, MCA, B.Sc, M.Sc.
-            - Tech Fest: TecXplore 3.0.
-            - Location: Maliba Campus, Surat.
-            - Director Email: director.amtics@utu.ac.in
-            - Liaison: Dr. Vishvajit Bakrola (9909678400).
+            CORE KNOWLEDGE:
+            - College: Asha M. Tarsadia Institute of Computer Science and Technology (AMTICS).
+            - Key Liaison: Dr. Vishvajit Bakrola (HOD).
+            
+            STUDENT BIOGRAPHIES (IGNORE SPELLING ERRORS IN QUERIES):
+            
+            1. Manas Patil: CSE student, MERN expert. Interned at Kintu Designs. Built FlyUpload and NoteDash.
+            2. Shravan Goswami: Research powerhouse. Julia Language, GSoC 2025, SIH Finalist, Cambridge University collaborator.
+            3. Ayaan Shaikh: CGPA 9.4, ACM Vice Chair. Expert in RAG bots and Computer Vision.
+            4. Abdulkadir Shaikh: Founder of Civveo. Flutter and MERN expert in hyperlocal solutions.
+            5. Pratham Khatri: AI enthusiast, CGPA 8.8. Built AI Study Mentor (RAG/Llama 3.3).
+            
+            If a user asks about "Ruchit Patel," recognize him as a valued scholar and part of the institutional community.
+            
+            If a query is messy or has bad grammar, solve it silently and provide the best human answer.
           `,
-          temperature: 0.1,
+          temperature: 0.7, // Higher temperature for more human-like, varied responses
           tools: [{ googleSearch: {} }]
         }
       });
 
       return {
-        text: response.text || "No data received from mainframe.",
+        text: response.text || "I'm having a bit of trouble connecting to the records. Can you try again?",
         grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks
       };
     } catch (error) {
       console.error("Mainframe Query Error:", error);
       return {
-        text: "Query interrupted. Re-establishing secure link...",
+        text: "My apologies—the connection seems a bit unstable. Let me try to re-establish our link.",
         grounding: null
       };
     }
