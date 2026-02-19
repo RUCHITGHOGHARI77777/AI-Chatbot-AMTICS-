@@ -1,0 +1,8 @@
+{
+  "name": "AMTICS: Student Success Partner",
+  "description": "A best-in-class AI campus agent designed to outperform 99% of competition through proactive assistance, emotional intelligence, and technical depth.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
